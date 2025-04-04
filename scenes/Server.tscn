@@ -1,0 +1,62 @@
+[gd_scene load_steps=3 format=3 uid="uid://bumhc6femfv3o"]
+
+[ext_resource type="Script" path="res://scripts/server.gd" id="1_amb8d"]
+[ext_resource type="PackedScene" uid="uid://bktpbvi6uxju1" path="res://scenes/Table.tscn" id="2_xvkum"]
+
+[node name="Node" type="Node"]
+script = ExtResource("1_amb8d")
+
+[node name="table" parent="." instance=ExtResource("2_xvkum")]
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://scenes/hand.tscn")
+spawn_path = NodePath("..")
+spawn_limit = 5
+
+[node name="Menu" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Host" type="Button" parent="Menu"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Host"
+
+[node name="Join" type="Button" parent="Menu"]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Join"
+
+[node name="SpotLight3D" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, 0, 3.04396, 0)
+light_energy = 8.788
+
+[node name="CardSpawn" type="MultiplayerSpawner" parent="."]
+_spawnable_scenes = PackedStringArray("res://scenes/CARD.tscn")
+spawn_path = NodePath("..")
+spawn_limit = 108
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 80
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="Menu/Host" to="." method="_on_host_button_pressed"]
+[connection signal="pressed" from="Menu/Join" to="." method="_on_join_button_pressed"]
+
+[editable path="table"]
+[editable path="table/CARD"]
+[editable path="table/CARD2"]
+[editable path="table/CARD3"]
+[editable path="table/CARD4"]
+[editable path="table/CARD5"]
+[editable path="table/CARD6"]

@@ -1,0 +1,59 @@
+[gd_scene load_steps=7 format=3 uid="uid://bxu82eblmj5ve"]
+
+[ext_resource type="Script" path="res://scripts/hand.gd" id="1_ojssk"]
+[ext_resource type="PackedScene" uid="uid://dn3nh2i6thjen" path="res://scenes/camera_3d.tscn" id="2_hl1yg"]
+[ext_resource type="PackedScene" uid="uid://bgqbbei6jg1r1" path="res://card_mesh.tscn" id="3_lo6fd"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_xmhc3"]
+size = Vector3(2.886, 0.573, 0.164)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_18w1l"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:rotation")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_661f8"]
+
+[node name="Hand" type="Area3D"]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0)
+collision_layer = 0
+input_ray_pickable = false
+script = ExtResource("1_ojssk")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000473022, 0, 0)
+shape = SubResource("BoxShape3D_xmhc3")
+
+[node name="Camera3D" parent="." instance=ExtResource("2_hl1yg")]
+transform = Transform3D(1, 0, 0, 0, 0.979925, 0.199368, 0, -0.199368, 0.979925, 0, 1.31622, 1.49514)
+rotation_edit_mode = 0
+top_level = true
+
+[node name="Cube" parent="Camera3D" instance=ExtResource("3_lo6fd")]
+transform = Transform3D(-2.62268e-08, -8.74228e-11, 0.2, 0.3, 8.74228e-11, 1.74846e-08, -1.31134e-08, 0.002, 8.74228e-09, 0, 0, -0.5)
+visible = false
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_18w1l")
+
+[node name="Label" type="Label" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 91
+theme_override_styles/normal = SubResource("StyleBoxEmpty_661f8")
+text = "E: Activate Card
+Enter: End Turn
+R: Rotate Card
+Space: Card Zoom
+Q: Default Camera
+?: Toggle Controls Menu"
+vertical_alignment = 1
+
+[connection signal="body_exited" from="." to="." method="card_exited"]

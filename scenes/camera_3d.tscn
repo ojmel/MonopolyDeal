@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://dn3nh2i6thjen"]
+
+[ext_resource type="Script" path="res://scripts/Camera3D.gd" id="1_vhhkd"]
+
+[node name="Camera3D" type="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 0.690125, 0.72369, 0, -0.72369, 0.690125, 1.41586, 1.48594, 2.66018)
+rotation_edit_mode = 1
+keep_aspect = 0
+fov = 112.5
+script = ExtResource("1_vhhkd")

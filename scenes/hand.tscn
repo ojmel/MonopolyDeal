@@ -56,4 +56,7 @@ Q: Default Camera
 ?: Toggle Controls Menu"
 vertical_alignment = 1
 
+[node name="AcceptDialog" type="AcceptDialog" parent="."]
+initial_position = 1
+
 [connection signal="body_exited" from="." to="." method="card_exited"]

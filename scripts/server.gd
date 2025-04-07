@@ -23,14 +23,14 @@ func _on_host_button_pressed():
 	enet_peer.create_server(PORT,5)
 	multiplayer.multiplayer_peer = enet_peer
 	multiplayer.peer_connected.connect(spawner.spawn)
-	multiplayer.peer_disconnected.connect(remove_player)
-	
+	#multiplayer.peer_disconnected.connect(remove_player)
 	spawner.spawn(multiplayer.get_unique_id())
 	upnp_setup()
 
 func _on_join_button_pressed():
 	main_menu.hide()
 	table.show()
+	print($Menu/Name.text)
 	enet_peer.create_client('localhost', PORT)
 	multiplayer.multiplayer_peer = enet_peer
 
@@ -41,11 +41,11 @@ func add_player(peer_id:int):
 	active_players.append(Player)
 	return Player
 		
-func remove_player(peer_id):
-	var Player = get_node_or_null(str(peer_id))
-	if Player:
-		player_positions.append(Player.position)
-		Player.queue_free()
+#func remove_player(peer_id):
+	#var Player = get_node_or_null(str(peer_id))
+	#if Player:
+		#player_positions.append(Player.position)
+		#Player.queue_free()
 
 func upnp_setup():
 	var upnp = UPNP.new()

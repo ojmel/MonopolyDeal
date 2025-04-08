@@ -4,15 +4,10 @@ extends Node
 @onready var table =$table 
 @onready var spawner=$MultiplayerSpawner
 var player_positions=[Vector3(1.8,0,2.1),Vector3(-1.8,0,2.1),Vector3(-1.8,0,-2.1),Vector3(1.8,0,-2.1),Vector3(3.2,0,0)]
-var active_players=[]
+var active_players={}
 @onready var player=preload("res://scenes/hand.tscn")
 const PORT = 9999
 var enet_peer = ENetMultiplayerPeer.new()
-
-		
-func _unhandled_input(event):
-	if Input.is_action_just_pressed("ui_cancel"):
-		get_tree().quit()
 		
 func _ready():
 	spawner.spawn_function=add_player
@@ -22,23 +17,30 @@ func _on_host_button_pressed():
 	table.show()
 	enet_peer.create_server(PORT,5)
 	multiplayer.multiplayer_peer = enet_peer
-	multiplayer.peer_connected.connect(spawner.spawn)
+	multiplayer.peer_connected.connect(func(id): spawner.spawn([$Menu/Name.text,id]))
 	#multiplayer.peer_disconnected.connect(remove_player)
-	spawner.spawn(multiplayer.get_unique_id())
+	spawner.spawn([$Menu/Name.text,multiplayer.get_unique_id()])
 	upnp_setup()
 
 func _on_join_button_pressed():
 	main_menu.hide()
 	table.show()
-	print($Menu/Name.text)
 	enet_peer.create_client('localhost', PORT)
 	multiplayer.multiplayer_peer = enet_peer
+	if $Menu/Name.text not in active_players.keys():
+		spawner.spawn([$Menu/Name.text,multiplayer.get_unique_id()])
+	else:
+		active_players[$Menu/Name.text].set_multiplayer_authority(multiplayer.get_unique_id(),true)
+		
 
-func add_player(peer_id:int):
+func add_player(data:Array):
+	var player_name:String=data[0]
+	print_debug(player_name)
+	var peer_id:int=data[1]
 	var Player:Hand=player.instantiate()
 	Player.name = str(peer_id)
 	Player.position=player_positions.pop_front()
-	active_players.append(Player)
+	active_players[player_name]=Player
 	return Player
 		
 #func remove_player(peer_id):

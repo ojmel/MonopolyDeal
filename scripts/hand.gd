@@ -25,8 +25,13 @@ func add_card_to_hand(peer_id:int):
 		spawner.spawn([info,table.global_position,peer_id])
 		
 func _enter_tree():
+	print_debug(str(name).to_int())
 	set_multiplayer_authority(str(name).to_int())
-	
+
+@rpc("any_peer","call_local","reliable")
+func change_authority():
+	set_multiplayer_authority(1)
+
 @rpc("any_peer","call_local","reliable")
 func change_turn(current_turn_taker):
 	turn_taker=current_turn_taker
@@ -42,6 +47,7 @@ func _ready():
 	CardCount.update_cards()
 	spawner=get_node('../CardSpawn')
 	spawner.spawn_function=add_to_hand
+	print_debug(get_multiplayer_authority())
 	if not is_multiplayer_authority(): return
 	camera_default=camera.global_transform
 	camera.current = true
@@ -117,8 +123,11 @@ func card_exited(body):
 		
 func deal():
 	if not multiplayer.is_server(): return
-	players=get_node('/root/Node').active_players
+	
+	players=get_node('/root/Node').active_players.values()
+	
 	players=players.map(func(player): return str(player.name).to_int())
+	print_debug(get_node('/root/Node').active_players)
 	for player in players:
 		for x in range(5):
 			add_card_to_hand(player)
@@ -180,5 +189,7 @@ func _process(delta):
 				get_node('../1').activate_card.rpc_id(1,collider.get_path())
 	if Input.is_action_just_pressed("start") and not get_node('/root/Node/Label').text:
 		deal()
+	if Input.is_key_pressed(KEY_TAB):
+		change_authority.rpc()
 		
 		

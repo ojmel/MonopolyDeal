@@ -25,7 +25,7 @@ func _on_host_button_pressed():
 func _on_join_button_pressed():
 	main_menu.hide()
 	table.show()
-	enet_peer.create_client('localhost', PORT)
+	enet_peer.create_client($Menu/Address.text, PORT)
 	multiplayer.multiplayer_peer = enet_peer
 	if $Menu/Name.text not in active_players.keys():
 		spawner.spawn([$Menu/Name.text,multiplayer.get_unique_id()])

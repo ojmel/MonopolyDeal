@@ -43,7 +43,7 @@ func request_spawn(data:Array):
 			
 func reset_authority(node_path:String,new_owner:int):
 	var changing_hand=get_node(node_path)
-	changing_hand.reset_authority.rpc(new_owner)
+	changing_hand.reset_authority.rpc_id(new_owner,new_owner)
 	
 func add_player(data:Array):
 	var player_name:String=data[0]

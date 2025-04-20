@@ -14,14 +14,14 @@ var target=Vector3.ZERO
 enum _states {hand,play,active,discard}
 var _state=_states.hand
 var tween=null
-var owned=null
+var _owned=null
 var card_speed=80
 @onready var camera=get_viewport().get_camera_3d()
 var bounds
 #TODO zoom in on card
 func _enter_tree():
 	if not process_mode==PROCESS_MODE_DISABLED:
-		set_multiplayer_authority(owned)
+		#set_multiplayer_authority(_owned)
 		change_card_visibility.rpc()
 
 func play_card():
@@ -51,7 +51,7 @@ func move_to_hand(hand,place):
 	
 @rpc("any_peer", "call_local","reliable")
 func move_to_discard(place):
-	if not is_multiplayer_authority(): return
+	if not _owned==multiplayer.get_unique_id(): return
 	place.y=place.y-0.03
 	default_pos=place
 	set_process(false)
@@ -68,9 +68,8 @@ func move_to_discard(place):
 	
 @rpc("any_peer", "call_local","reliable")
 func change_card_visibility(visibility=true):
-	
 	if not visibility:
-		if get_multiplayer_authority()==multiplayer.get_unique_id():
+		if check_authority():
 			$Cube.mesh=load(_mesh)
 		else:
 			$Cube.mesh=load("res://cards/money/1M.tres")
@@ -86,9 +85,11 @@ func make_card(mesh_path,type):
 	bord.emission_enabled=false
 	$Cube.set_surface_override_material(0,bord)
 	
+func check_authority():
+	return _owned==multiplayer.get_unique_id()
 @rpc("any_peer","call_local","unreliable_ordered")	
 func move_non_authority_card(suggested_velocity):
-	if not is_multiplayer_authority(): return
+	if not check_authority(): return
 	velocity=suggested_velocity
 	move_and_slide()
 	position.y=_play_area.global_position.y+.3
@@ -96,12 +97,12 @@ func move_non_authority_card(suggested_velocity):
 @rpc("any_peer","call_local","unreliable_ordered")	
 func rotate_non_authority_card(suggested_rotation):
 	# Only for y rotations
-	if not is_multiplayer_authority(): return
+	if not check_authority(): return
 	rotate_y(suggested_rotation)
 	
 func _physics_process(delta):
 	if _clicked:
-		if _in_hand and _clicked==get_multiplayer_authority():
+		if _in_hand and _clicked==multiplayer.get_unique_id():
 			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d())
 			if query:
 				target=query['position']
@@ -110,16 +111,16 @@ func _physics_process(delta):
 				var origin=camera.project_ray_origin(mouse_pos)
 				target=origin+camera.project_ray_normal(mouse_pos)*2
 			velocity=(target-global_position).project(global_transform.basis.x)*card_speed*delta
-			if not is_multiplayer_authority(): return
+			if not check_authority(): return
 			move_and_slide()
 			
-		elif _state==_states.play and _clicked==get_multiplayer_authority():
+		elif _state==_states.play and _clicked==multiplayer.get_unique_id():
 			check_inplay()
 			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d(),0b10)
 			if query:
 				target=query['position']
 			velocity=(target-global_position)*card_speed*delta
-			if not is_multiplayer_authority(): return
+			if not check_authority(): return
 			move_and_slide()
 			position.y=_play_area.global_position.y+.3
 			
@@ -129,16 +130,16 @@ func _physics_process(delta):
 			if query:
 				target=query['position']
 			var suggest_velocity=(target-global_position)*card_speed
-			get_node('../{0}'.format([name])).move_non_authority_card.rpc_id(get_multiplayer_authority(),suggest_velocity*delta)
+			get_node('../{0}'.format([name])).move_non_authority_card.rpc_id(_owned,suggest_velocity*delta)
 		
 	if is_on_floor():
-		if not is_multiplayer_authority(): return
+		if not check_authority(): return
 		velocity=velocity*.9
 		if velocity.length()<0.0003:
 			velocity=Vector3.ZERO
 			
 	if _state==_states.play:
-		if not is_multiplayer_authority(): return
+		if not check_authority(): return
 		move_and_slide()
 		check_inplay()
 		position.y=clamp(position.y,_play_area.global_position.y-.02,_play_area.global_position.y+.4)
@@ -159,14 +160,14 @@ func check_inplay():
 	return check_x and check_z
 	
 func _mouse_enter():
-	if not is_multiplayer_authority(): return
+	if not check_authority(): return
 	if _in_hand and not raised:
 		$Cube.translate_object_local(Vector3(.1,0,0))
 		raised=true
 		$Cube.get_surface_override_material(0).emission_enabled=true
 	
 func _mouse_exit():
-	if not is_multiplayer_authority(): return
+	if not check_authority(): return
 	if raised:
 		raised=false
 		$Cube.translate_object_local(Vector3(-.1,0,0))
@@ -179,7 +180,7 @@ func click(clicker_id):
 @rpc("any_peer", "call_local","reliable")
 func unclick():
 	_clicked=null
-	if not is_multiplayer_authority(): return
+	if not check_authority(): return
 	if _in_hand:
 		velocity=Vector3.ZERO
 		move_to_hand(_in_hand,default_pos)
@@ -189,24 +190,25 @@ func unclick():
 		collision_mask=0b11
 		
 @rpc("any_peer", "call_local","reliable")
-func update_card(mesh,state,in_hand,card_type,clicked):
+func update_card(mesh,state,in_hand,card_type,clicked,owned):
 	_mesh=mesh
 	_state=state
 	_card_type=card_type
 	_clicked=clicked
+	_owned=owned
 	if in_hand==null: return
 	elif in_hand.is_class('EncodedObjectAsID'): _in_hand=instance_from_id(in_hand.object_id)	
 	
 @rpc("any_peer", "call_local","reliable")
 func _update():
-	if not is_multiplayer_authority(): return
+	if not check_authority(): return
 	update_card.rpc(_mesh,_state,_in_hand,_card_type,_clicked)
 	
 @rpc("any_peer","call_local")
 func reset_authority(new_owner:int):
 	set_multiplayer_authority(new_owner,true)
-	owned=new_owner
-	#if not is_multiplayer_authority(): return
+	_owned=new_owner
+	#if not check_authority(): return
 	#CardCount.update_cards.rpc()	
 	
 func _ready():

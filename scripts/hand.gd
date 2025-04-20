@@ -76,7 +76,7 @@ func add_to_hand(data):
 	card1.name=card_info[0].get_file().get_basename()+str(Time.get_ticks_msec())
 	card1.rotation.z=PI
 	card1.position=start
-	card1.owned=peer_id
+	card1._owned=peer_id
 	get_node('../'+CardCount.player_info.find_key(peer_id)).cards.append(card1)
 	get_node('../'+CardCount.player_info.find_key(peer_id)).reorganize_cards()
 	return card1

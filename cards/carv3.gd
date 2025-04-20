@@ -22,6 +22,7 @@ var bounds
 func _enter_tree():
 	if not process_mode==PROCESS_MODE_DISABLED:
 		set_multiplayer_authority(owned)
+		change_card_visibility.rpc()
 
 func play_card():
 	global_rotation.x=0
@@ -37,6 +38,7 @@ func move_to_hand(hand,place):
 	default_pos=place
 	if not is_inside_tree():
 		await ready
+	hand.map_card_hands.rpc()	
 	tween = create_tween()
 	tween.tween_property(self,'global_position:x',place.x,animate_time)
 	tween.parallel().tween_property(self,'global_position:z',place.z,animate_time)
@@ -66,11 +68,12 @@ func move_to_discard(place):
 	
 @rpc("any_peer", "call_local","reliable")
 func change_card_visibility(visibility=true):
+	
 	if not visibility:
 		if get_multiplayer_authority()==multiplayer.get_unique_id():
 			$Cube.mesh=load(_mesh)
 		else:
-			$Cube.mesh=load("res://cards/money/1M.tres")	
+			$Cube.mesh=load("res://cards/money/1M.tres")
 	elif not _in_hand or _in_hand.overlaps_body(self):
 		$Cube.mesh=load(_mesh)
 		
@@ -98,7 +101,7 @@ func rotate_non_authority_card(suggested_rotation):
 	
 func _physics_process(delta):
 	if _clicked:
-		if _in_hand and _clicked==owned:
+		if _in_hand and _clicked==get_multiplayer_authority():
 			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d())
 			if query:
 				target=query['position']
@@ -110,7 +113,7 @@ func _physics_process(delta):
 			if not is_multiplayer_authority(): return
 			move_and_slide()
 			
-		elif _state==_states.play and _clicked==owned:
+		elif _state==_states.play and _clicked==get_multiplayer_authority():
 			check_inplay()
 			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d(),0b10)
 			if query:
@@ -161,13 +164,17 @@ func _mouse_enter():
 		$Cube.translate_object_local(Vector3(.1,0,0))
 		raised=true
 		$Cube.get_surface_override_material(0).emission_enabled=true
-		
+	
 func _mouse_exit():
 	if not is_multiplayer_authority(): return
 	if raised:
 		raised=false
 		$Cube.translate_object_local(Vector3(-.1,0,0))
 	$Cube.get_surface_override_material(0).emission_enabled=false
+	
+@rpc("any_peer", "call_local","reliable")
+func click(clicker_id):
+	_clicked=clicker_id
 	
 @rpc("any_peer", "call_local","reliable")
 func unclick():
@@ -183,21 +190,24 @@ func unclick():
 		
 @rpc("any_peer", "call_local","reliable")
 func update_card(mesh,state,in_hand,card_type,clicked):
-	
 	_mesh=mesh
-	_state=state	
-	_in_hand=in_hand
+	_state=state
 	_card_type=card_type
 	_clicked=clicked
+	if in_hand==null: return
+	elif in_hand.is_class('EncodedObjectAsID'): _in_hand=instance_from_id(in_hand.object_id)	
 	
+@rpc("any_peer", "call_local","reliable")
 func _update():
 	if not is_multiplayer_authority(): return
 	update_card.rpc(_mesh,_state,_in_hand,_card_type,_clicked)
-
-						
-@rpc("any_peer", "call_local","reliable")
-func click(clicker_id):
-	_clicked=clicker_id
+	
+@rpc("any_peer","call_local")
+func reset_authority(new_owner:int):
+	set_multiplayer_authority(new_owner,true)
+	owned=new_owner
+	#if not is_multiplayer_authority(): return
+	#CardCount.update_cards.rpc()	
 	
 func _ready():
 	tween=get_tree().create_tween()

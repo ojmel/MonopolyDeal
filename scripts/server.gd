@@ -3,12 +3,13 @@ extends Node
 @onready var main_menu = $Menu
 @onready var table =$table 
 @onready var spawner=$MultiplayerSpawner
-var player_positions=[Vector3(1.8,0,2.1),Vector3(-1.8,0,2.1),Vector3(-1.8,0,-2.1),Vector3(1.8,0,-2.1),Vector3(3.2,0,0)]
+var player_positions=[Transform3D(Basis(Vector3.LEFT,PI/4),Vector3(1.8,0,2.1)),Transform3D(Basis(Vector3.LEFT,PI/4),Vector3(-1.8,0,2.1)),Transform3D(Basis(Vector3.UP,PI/2)*Basis(Vector3.LEFT,PI/4),Vector3(3.6,0,0)),Transform3D(Basis(Vector3.UP,PI)*Basis(Vector3.LEFT,PI/4),Vector3(-1.8,0,-2.1)),Transform3D(Basis(Vector3.UP,PI)*Basis(Vector3.LEFT,PI/4),Vector3(1.8,0,-2.1))]
 var active_players={}
+
 @onready var player=preload("res://scenes/hand.tscn")
-const PORT = 9999
+const PORT = 5005
 var enet_peer = ENetMultiplayerPeer.new()
-		
+
 func _ready():
 	spawner.spawn_function=add_player
 	
@@ -17,41 +18,46 @@ func _on_host_button_pressed():
 	table.show()
 	enet_peer.create_server(PORT,5)
 	multiplayer.multiplayer_peer = enet_peer
-	multiplayer.peer_connected.connect(func(id): spawner.spawn([$Menu/Name.text,id]))
-	#multiplayer.peer_disconnected.connect(remove_player)
 	spawner.spawn([$Menu/Name.text,multiplayer.get_unique_id()])
 	upnp_setup()
 
 func _on_join_button_pressed():
+	#PLaye rname have to be sent by rpc
 	main_menu.hide()
 	table.show()
-	enet_peer.create_client($Menu/Address.text, PORT)
+	enet_peer.create_client('2601:5c2:0:c2a0:beba:f0c9:44d4:5890', PORT)
 	multiplayer.multiplayer_peer = enet_peer
-	if $Menu/Name.text not in active_players.keys():
-		spawner.spawn([$Menu/Name.text,multiplayer.get_unique_id()])
-	else:
-		active_players[$Menu/Name.text].set_multiplayer_authority(multiplayer.get_unique_id(),true)
+	multiplayer.connected_to_server.connect(func(): request_spawn.rpc_id(1,[$Menu/Name.text,multiplayer.get_unique_id()]))
 		
-
+@rpc("any_peer","call_local")
+func request_spawn(data:Array):
+	if multiplayer.is_server():
+		var player_name:String=data[0]
+		var peer_id:int=data[1]
+		if player_name not in active_players.keys():
+			spawner.spawn(data)
+		else:
+			CardCount.local_player_update(data)
+			CardCount.transfer_card_data.rpc(CardCount.mutual_card_info)
+			reset_authority(active_players[player_name].get_path(),peer_id)
+			
+func reset_authority(node_path:String,new_owner:int):
+	var changing_hand=get_node(node_path)
+	changing_hand.reset_authority.rpc(new_owner)
+	
 func add_player(data:Array):
 	var player_name:String=data[0]
-	print_debug(player_name)
 	var peer_id:int=data[1]
 	var Player:Hand=player.instantiate()
-	Player.name = str(peer_id)
-	Player.position=player_positions.pop_front()
+	Player.player_id = peer_id
+	Player.name=player_name
+	Player.global_transform=player_positions.pop_front()
+	CardCount.local_player_update(data)
 	active_players[player_name]=Player
 	return Player
 		
-#func remove_player(peer_id):
-	#var Player = get_node_or_null(str(peer_id))
-	#if Player:
-		#player_positions.append(Player.position)
-		#Player.queue_free()
-
 func upnp_setup():
 	var upnp = UPNP.new()
-	
 	var discover_result = upnp.discover()
 	assert(discover_result == UPNP.UPNP_RESULT_SUCCESS, \
 		"UPNP Discover Failed! Error %s" % discover_result)
@@ -64,4 +70,3 @@ func upnp_setup():
 		"UPNP Port Mapping Failed! Error %s" % map_result)
 	
 	print("Success! Join Address: %s" % upnp.query_external_address())
-

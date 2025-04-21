@@ -22,7 +22,6 @@ func _on_host_button_pressed():
 	upnp_setup()
 
 func _on_join_button_pressed():
-	#PLaye rname have to be sent by rpc
 	main_menu.hide()
 	table.show()
 	enet_peer.create_client('2601:5c2:0:c2a0:beba:f0c9:44d4:5890', PORT)
@@ -37,13 +36,18 @@ func request_spawn(data:Array):
 		if player_name not in active_players.keys():
 			spawner.spawn(data)
 		else:
-			CardCount.local_player_update(data)
-			CardCount.transfer_card_data.rpc(CardCount.mutual_card_info)
+			CardCount.local_player_update([player_name,peer_id])
+			CardCount.transfer_card_data.rpc_id(peer_id,CardCount.mutual_card_info)
+			CardCount.update_players.rpc_id(peer_id,CardCount.player_info)
 			reset_authority(active_players[player_name].get_path(),peer_id)
 			
 func reset_authority(node_path:String,new_owner:int):
+	if not multiplayer.is_server(): return
 	var changing_hand=get_node(node_path)
-	changing_hand.reset_authority.rpc_id(new_owner,new_owner)
+	changing_hand.reset_authority.rpc(new_owner)
+	var cards=CardCount.mutual_card_info[changing_hand.name].map(func(card_path): return get_node(card_path))
+	for card in cards:
+		card.reset_authority.rpc(new_owner)
 	
 func add_player(data:Array):
 	var player_name:String=data[0]

@@ -18,63 +18,13 @@ var _owned=null
 var card_speed=80
 @onready var camera=get_viewport().get_camera_3d()
 var bounds
-#TODO zoom in on card
-func _enter_tree():
-	if not process_mode==PROCESS_MODE_DISABLED:
-		#set_multiplayer_authority(_owned)
-		change_card_visibility.rpc()
-
-func play_card():
-	global_rotation.x=0
-	global_rotation.z=0 
-	_in_hand=null
-	_state=_states.play
-	_update()
-		
-func give_parabola(t):
-	global_position.y=default_pos.y+4*t*(1-t)
-	
-func move_to_hand(hand,place):
-	default_pos=place
-	if not is_inside_tree():
-		await ready
-	hand.map_card_hands.rpc()	
-	tween = create_tween()
-	tween.tween_property(self,'global_position:x',place.x,animate_time)
-	tween.parallel().tween_property(self,'global_position:z',place.z,animate_time)
-	tween.parallel().tween_property(self,'global_rotation',hand.global_rotation+Vector3(PI/4,PI/2,PI/4),animate_time)
-	if not _in_hand:
-		tween.parallel().tween_method(give_parabola,0.0,1.0,animate_time)
-		tween.tween_callback(set_hand.bind(hand)).set_delay(animate_time)
-	else:
-		tween.parallel().tween_property(self,'global_position:y',place.y,animate_time)
 	
 @rpc("any_peer", "call_local","reliable")
-func move_to_discard(place):
-	if not _owned==multiplayer.get_unique_id(): return
-	place.y=place.y-0.03
-	default_pos=place
-	set_process(false)
-	set_physics_process(false)
-	if not is_inside_tree():
-		await ready
-	tween = create_tween()
-	tween.tween_property(self,'global_position:x',place.x,animate_time)
-	tween.parallel().tween_property(self,'global_position:z',place.z,animate_time)
-	tween.parallel().tween_property(self,'global_rotation',Vector3(0,PI/2,0),animate_time)
-	tween.parallel().tween_method(give_parabola,0.0,1.0,animate_time)
-	_state=_states.active
-	_update()
-	
-@rpc("any_peer", "call_local","reliable")
-func change_card_visibility(visibility=true):
-	if not visibility:
-		if check_authority():
-			$Cube.mesh=load(_mesh)
-		else:
-			$Cube.mesh=load("res://cards/money/1M.tres")
-	elif not _in_hand or _in_hand.overlaps_body(self):
+func change_card_visibility():
+	if _state==_states.play or multiplayer.get_unique_id()==_owned:
 		$Cube.mesh=load(_mesh)
+	else:
+		$Cube.mesh=load("res://cards/money/1M.tres")
 		
 @rpc("any_peer", "call_local","reliable")	
 func make_card(mesh_path,type):
@@ -87,59 +37,96 @@ func make_card(mesh_path,type):
 	
 func check_authority():
 	return _owned==multiplayer.get_unique_id()
+	
+@rpc("any_peer", "call_local","reliable")
+func play_card():
+	global_rotation.x=0
+	global_rotation.z=0 
+	_in_hand=null
+	_state=_states.play
+	_update()
+		
+func give_parabola(t):
+	global_position.y=default_pos.y+4*t*(1-t)
+	
+@rpc("any_peer", "call_local","reliable")
+func move_to_hand(hand,place):
+	if not multiplayer.is_server(): return
+	default_pos=place
+	if not is_inside_tree():
+		await ready
+	hand = get_node(hand)
+	tween = create_tween()
+	tween.tween_property(self,'global_position:x',place.x,animate_time)
+	tween.parallel().tween_property(self,'global_position:z',place.z,animate_time)
+	tween.parallel().tween_property(self,'global_rotation',hand.global_rotation+Vector3(PI/4,PI/2,PI/4),animate_time)
+	if not _in_hand:
+		tween.parallel().tween_method(give_parabola,0.0,1.0,animate_time)
+		tween.tween_callback(set_hand.bind(hand)).set_delay(animate_time)
+	else:
+		tween.parallel().tween_property(self,'global_position:y',place.y,animate_time)
+	
+@rpc("any_peer", "call_local","reliable")
+func move_to_discard(place):
+	if not multiplayer.is_server(): return
+	place.y=place.y-0.03
+	default_pos=place
+	set_process(false)
+	set_physics_process(false)
+	if not is_inside_tree():
+		await ready
+	tween = create_tween()
+	tween.tween_property(self,'global_position:x',place.x,animate_time)
+	tween.parallel().tween_property(self,'global_position:z',place.z,animate_time)
+	tween.parallel().tween_property(self,'global_rotation',Vector3(0,PI/2,0),animate_time)
+	tween.parallel().tween_method(give_parabola,0.0,1.0,animate_time)
+	_state=_states.active
+	_update()	
+	
 @rpc("any_peer","call_local","unreliable_ordered")	
 func move_non_authority_card(suggested_velocity):
-	if not check_authority(): return
+	if not multiplayer.is_server(): return
+	check_inplay()
 	velocity=suggested_velocity
 	move_and_slide()
-	position.y=_play_area.global_position.y+.3
+	if check_inplay(): position.y=_play_area.global_position.y+.3
 
 @rpc("any_peer","call_local","unreliable_ordered")	
 func rotate_non_authority_card(suggested_rotation):
 	# Only for y rotations
-	if not check_authority(): return
+	if not multiplayer.is_server(): return
 	rotate_y(suggested_rotation)
 	
 func _physics_process(delta):
 	if _clicked:
-		if _in_hand and _clicked==multiplayer.get_unique_id():
-			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d())
-			if query:
-				target=query['position']
-			else:
-				var mouse_pos=get_viewport().get_mouse_position()
-				var origin=camera.project_ray_origin(mouse_pos)
-				target=origin+camera.project_ray_normal(mouse_pos)*2
-			velocity=(target-global_position).project(global_transform.basis.x)*card_speed*delta
-			if not check_authority(): return
-			move_and_slide()
-			
-		elif _state==_states.play and _clicked==multiplayer.get_unique_id():
-			check_inplay()
-			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d(),0b10)
-			if query:
-				target=query['position']
-			velocity=(target-global_position)*card_speed*delta
-			if not check_authority(): return
-			move_and_slide()
-			position.y=_play_area.global_position.y+.3
-			
-		elif _state==_states.play and _clicked==multiplayer.get_unique_id():
-			check_inplay()
-			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d(),0b10)
-			if query:
-				target=query['position']
-			var suggest_velocity=(target-global_position)*card_speed
-			get_node('../{0}'.format([name])).move_non_authority_card.rpc_id(_owned,suggest_velocity*delta)
+		var suggested_velocity
+		if _clicked==multiplayer.get_unique_id():
+			if _in_hand:
+				var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d())
+				if query:
+					target=query['position']
+				else:
+					var mouse_pos=get_viewport().get_mouse_position()
+					var origin=camera.project_ray_origin(mouse_pos)
+					target=origin+camera.project_ray_normal(mouse_pos)*2
+				suggested_velocity=(target-global_position).project(global_transform.basis.x)*card_speed*delta
+				move_non_authority_card.rpc_id(1,suggested_velocity)
+			elif _state==_states.play:
+				check_inplay()
+				var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d(),0b10)
+				if query:
+					target=query['position']
+				suggested_velocity=(target-global_position)*card_speed*delta
+				move_non_authority_card.rpc_id(1,suggested_velocity)
 		
 	if is_on_floor():
-		if not check_authority(): return
+		if not multiplayer.is_server(): return
 		velocity=velocity*.9
 		if velocity.length()<0.0003:
 			velocity=Vector3.ZERO
 			
 	if _state==_states.play:
-		if not check_authority(): return
+		if not multiplayer.is_server(): return
 		move_and_slide()
 		check_inplay()
 		position.y=clamp(position.y,_play_area.global_position.y-.02,_play_area.global_position.y+.4)
@@ -147,10 +134,11 @@ func _physics_process(delta):
 		position.z=clamp(position.z,-bounds.size.z/2,bounds.size.z/2)
 		
 func set_hand(hand):
+	if not multiplayer.is_server(): return
 	_in_hand=hand
 	_update()
 	collision_layer=0b1
-	change_card_visibility.rpc(false)
+	change_card_visibility.rpc()
 	
 func check_inplay():
 	_play_area=get_node('/root/Node/table/PlayArea')
@@ -180,10 +168,10 @@ func click(clicker_id):
 @rpc("any_peer", "call_local","reliable")
 func unclick():
 	_clicked=null
-	if not check_authority(): return
+	if not multiplayer.is_server(): return
 	if _in_hand:
 		velocity=Vector3.ZERO
-		move_to_hand(_in_hand,default_pos)
+		move_to_hand(_in_hand.get_path(),default_pos)
 	else:
 		motion_mode=CharacterBody3D.MOTION_MODE_GROUNDED
 		velocity.y=-1
@@ -196,22 +184,21 @@ func update_card(mesh,state,in_hand,card_type,clicked,owned):
 	_card_type=card_type
 	_clicked=clicked
 	_owned=owned
-	if in_hand==null: return
-	elif in_hand.is_class('EncodedObjectAsID'): _in_hand=instance_from_id(in_hand.object_id)	
+	if in_hand==null: _in_hand=null
+	else: _in_hand=get_node(in_hand)
+	change_card_visibility()
 	
 @rpc("any_peer", "call_local","reliable")
 func _update():
-	if not check_authority(): return
-	update_card.rpc(_mesh,_state,_in_hand,_card_type,_clicked)
+	if not multiplayer.is_server(): return
+	if _in_hand!=null: _in_hand=_in_hand.get_path()
+	update_card.rpc(_mesh,_state,_in_hand,_card_type,_clicked,_owned)
 	
 @rpc("any_peer","call_local")
 func reset_authority(new_owner:int):
-	set_multiplayer_authority(new_owner,true)
 	_owned=new_owner
-	#if not check_authority(): return
-	#CardCount.update_cards.rpc()	
 	
 func _ready():
-	tween=get_tree().create_tween()
+	tween=create_tween()
 	velocity=Vector3.ZERO
 	

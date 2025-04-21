@@ -24,8 +24,8 @@ var money={'res://cards/money//10M.tres':1, 'res://cards/money//1M.tres':6,
 var card_count={'money':money,'property':property,'action':action}
 var mutual_card_info={'deck':[],'discard':[],'table':[]}
 var player_info:Dictionary={}
-
-@rpc("any_peer","call_local")
+signal updated()
+@rpc("any_peer","call_local","reliable")
 func map_card_hands(player_name:String,card_paths:Array):
 	if not multiplayer.is_server(): return
 	mutual_card_info[player_name]=card_paths
@@ -44,33 +44,36 @@ func raycast_from_mouse(camera,collision_mask=0b1):
 		ray.to=normal*1000
 		return get_world_3d().direct_space_state.intersect_ray(ray)
 		
-@rpc("any_peer","call_local")
+@rpc("any_peer","call_local","reliable")
 func update_cards():
 	for card in get_node('/root/Node').get_children().filter(func(node):return node.has_method('make_card')):
-		card._update.rpc()
-		card.change_card_visibility.rpc()
+		card._update.rpc_id(1)
 		
 func internal_update(deck:Array,discard:Array):
 	mutual_card_info['deck']=deck
 	mutual_card_info['discard']=discard
 	transfer_card_data.rpc(mutual_card_info)
+	
 		
-@rpc("any_peer","call_local")
+@rpc("any_peer","call_local","reliable")
 func transfer_card_data(card_info):
-	#if multiplayer.is_server():
-		#for peer_id in multiplayer.get_peers():
-			#if peer_id != 1:
-				#rpc_id(peer_id, "transfer_card_data",mutual_card_info)
-	#else:
 	mutual_card_info=card_info
+	updated.emit()
 		
 func local_player_update(data:Array):
+	if not multiplayer.is_server(): return
 	var player_name:String=data[0]
 	var peer_id:int=data[1]
 	player_info[player_name]=peer_id
 	update_players.rpc(player_info)
 	
-@rpc("any_peer","call_local")
+@rpc("any_peer","call_local","reliable")
 func update_players(new_info):
 	player_info=new_info
+	
+@rpc("any_peer","call_local","reliable")
+func request_update():
+	if not multiplayer.is_server(): return
+	var server_hand=get_node('/root/Node/'+CardCount.player_info.find_key(1))
+	internal_update(server_hand.deck_cards,server_hand.discards)
 	

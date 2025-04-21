@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bxu82eblmj5ve"]
+[gd_scene load_steps=8 format=3 uid="uid://bxu82eblmj5ve"]
 
 [ext_resource type="Script" path="res://scripts/hand.gd" id="1_ojssk"]
 [ext_resource type="PackedScene" uid="uid://dn3nh2i6thjen" path="res://scenes/camera_3d.tscn" id="2_hl1yg"]
@@ -16,6 +16,9 @@ properties/1/spawn = true
 properties/1/replication_mode = 1
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_661f8"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_oauqg"]
+font_size = 41
 
 [node name="Hand" type="Area3D"]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0)
@@ -39,7 +42,7 @@ visible = false
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
 replication_config = SubResource("SceneReplicationConfig_18w1l")
 
-[node name="Label" type="Label" parent="."]
+[node name="Instructions" type="Label" parent="."]
 visible = false
 anchors_preset = 15
 anchor_right = 1.0
@@ -58,5 +61,23 @@ vertical_alignment = 1
 
 [node name="AcceptDialog" type="AcceptDialog" parent="."]
 initial_position = 1
+
+[node name="TurnTaker" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+label_settings = SubResource("LabelSettings_oauqg")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="InstructQueue" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Press ? for Controls"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [connection signal="body_exited" from="." to="." method="card_exited"]

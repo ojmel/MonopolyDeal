@@ -24,22 +24,26 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.05
+theme_override_font_sizes/font_size = 111
 text = "Host"
 
 [node name="Join" type="Button" parent="Menu"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 111
 text = "Join"
 
 [node name="Name" type="LineEdit" parent="Menu"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 46
 placeholder_text = "Enter Nickname"
 alignment = 1
 
 [node name="Address" type="LineEdit" parent="Menu"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 46
 text = "Enter Address"
 alignment = 1
 

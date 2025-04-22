@@ -9,8 +9,8 @@ var camera_default
 var table=null
 var player_id:int
 signal me_want_card(hand)
-var deck_cards=[]
-var discards=[]
+var deck_info=[]
+var discard_nodes=[]
 var turn_taker:String
 var clicked_group='clicked_group'
 var spawner
@@ -46,6 +46,7 @@ func change_turn(current_turn_taker:String):
 				get_node('../'+turn_taker).request_dealer.rpc_id(turn_taker_id,turn_taker_id)
 		
 func _ready():
+	print_debug(get_viewport().size)
 	CardCount.update_cards()
 	spawner=get_node('../CardSpawn')
 	spawner.spawn_function=add_to_hand
@@ -58,9 +59,9 @@ func _ready():
 			var material_dict=CardCount.card_count[type]
 			for material in material_dict.keys():
 				for _x in range(material_dict[material]):
-					deck_cards.append([material,type])
-			deck_cards.shuffle()
-		CardCount.internal_update(deck_cards,discards)
+					deck_info.append([material,type])
+			deck_info.shuffle()
+		CardCount.internal_update(deck_info,get_discard_info())
 		
 func deal():
 	if not multiplayer.is_server(): return
@@ -74,6 +75,11 @@ func deal():
 	for player in players:
 		get_node('../'+player).change_turn.rpc_id(CardCount.player_info[player],turn_taker)
 		
+func shuffle_discard():
+	if not multiplayer.is_server(): return
+	deck_info=get_discard_info()
+	discard_nodes.clear()
+	
 @rpc("any_peer")
 func request_dealer(peer_id:int):
 	if cards.size()<10:
@@ -85,15 +91,17 @@ func request_dealer(peer_id:int):
 @rpc("any_peer")
 func add_card_to_hand(peer_id:int):
 	if not multiplayer.is_server(): return
-	if deck_cards:
-		var info=deck_cards.pop_front()
-		CardCount.internal_update(deck_cards,discards)
+	if deck_info:
+		var info=deck_info.pop_front()
+		CardCount.internal_update(deck_info,get_discard_info())
 		var card=spawner.spawn([info,table.global_position,peer_id])
 		get_node('../'+CardCount.player_info.find_key(peer_id)).send_card.rpc_id(peer_id,card.get_path())
+	else:
+		shuffle_discard()
+		add_card_to_hand(peer_id)
 		
 @rpc("any_peer","call_local")
 func send_card(card_path):
-	
 	var card=get_node(card_path)
 	cards.append(card)
 	reorganize_cards()
@@ -118,15 +126,18 @@ func activate_card(card_path):
 	var card=get_node(card_path)
 	card.get_node('CollisionShape3D').disabled=true
 	var discard=get_node('/root/Node/table/Discard')
-	card.move_to_discard(discard.global_position+Vector3(0,0.005*discards.size(),0))
+	card.move_to_discard(discard.global_position+Vector3(0,0.005*discard_nodes.size(),0))
 	if card._mesh=="res://cards/action//passgo.tres":
 		await card.tween.finished
 		for x in range(2):
 			# Will glitch things out if youplay more than 1 pass go at your limit
 			add_card_to_hand(CardCount.player_info[turn_taker])
-	discards.append([card._mesh,card._card_type])
-	CardCount.internal_update(deck_cards,discards)
-		
+	discard_nodes.append(card)
+	CardCount.internal_update(deck_info,get_discard_info())
+	
+func get_discard_info():
+	return discard_nodes.map(func(card): return [card._mesh,card._card_type])
+	
 func card_exited(body):
 	if not is_multiplayer_authority(): return
 	if body._in_hand==self and $TurnTaker.text==CardCount.player_info.find_key(multiplayer.get_unique_id()):
@@ -134,7 +145,6 @@ func card_exited(body):
 		body.play_card.rpc_id(1)
 		body.change_card_visibility.rpc()
 		cards.erase(body)
-		print_debug(cards)
 		map_card_hands()
 		reorganize_cards()	
 		
@@ -213,5 +223,8 @@ func _process(delta):
 				get_node('../'+CardCount.player_info.find_key(1)).activate_card.rpc_id(1,collider.get_path())
 	if Input.is_action_just_pressed("start") and not $TurnTaker.text:
 		deal()
+	if Input.is_action_just_pressed("players"):
+		$PlayerNames.print_names(players)
+		$PlayerNames.visible=!$PlayerNames.visible
 		
 		

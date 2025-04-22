@@ -24,44 +24,43 @@ grow_vertical = 2
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.05
+theme_override_font_sizes/font_size = 111
 text = "Host"
 
 [node name="Join" type="Button" parent="Menu"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 111
 text = "Join"
 
 [node name="Name" type="LineEdit" parent="Menu"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 46
 placeholder_text = "Enter Nickname"
 alignment = 1
 
 [node name="Address" type="LineEdit" parent="Menu"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 46
 text = "Enter Address"
 alignment = 1
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, 0, 3.04396, 0)
-light_energy = 8.788
+transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, -1.2212, 3.80527, 0.0979419)
+light_energy = 16.0
+light_indirect_energy = 3.424
+
+[node name="SpotLight3D2" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, 1.79683, 3.77971, 0)
+light_energy = 16.0
+light_indirect_energy = 3.424
 
 [node name="CardSpawn" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("res://scenes/CARD.tscn")
 spawn_path = NodePath("..")
 spawn_limit = 108
-
-[node name="Label" type="Label" parent="."]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -40.0
-offset_bottom = 23.0
-grow_horizontal = 0
-theme_override_font_sizes/font_size = 80
-horizontal_alignment = 1
-vertical_alignment = 1
 
 [connection signal="pressed" from="Menu/Host" to="." method="_on_host_button_pressed"]
 [connection signal="pressed" from="Menu/Join" to="." method="_on_join_button_pressed"]

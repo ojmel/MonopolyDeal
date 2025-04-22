@@ -124,7 +124,7 @@ func add_to_hand(data):
 func activate_card(card_path):
 	if not multiplayer.is_server(): return
 	var card=get_node(card_path)
-	card.get_node('CollisionShape3D').disabled=true
+	#card.get_node('CollisionShape3D').disabled=true
 	var discard=get_node('/root/Node/table/Discard')
 	card.move_to_discard(discard.global_position+Vector3(0,0.005*discard_nodes.size(),0))
 	if card._mesh=="res://cards/action//passgo.tres":
@@ -145,7 +145,6 @@ func card_exited(body):
 		body.play_card.rpc_id(1)
 		body.change_card_visibility.rpc()
 		cards.erase(body)
-		map_card_hands()
 		reorganize_cards()	
 		
 @rpc("any_peer","call_local")
@@ -201,18 +200,15 @@ func _input(event):
 		# make this more intuitive so it goes away when you are looking at the same card
 		if query:
 			var collider=query['collider']
-			if collider._in_hand==self or collider.check_inplay():
+			if collider._mesh and (collider._in_hand==self or collider.check_inplay()):
 				$Camera3D/Cube.visible=true
 				$Camera3D/Cube.mesh=load(collider._mesh)
 		else:
 			$Camera3D/Cube.visible=false
-			
-func _process(delta):
-	if not is_multiplayer_authority(): return
-	if actions>=3 or (Input.is_action_just_pressed("start") and $TurnTaker.text==name):
+	if actions>=3 or (event.is_action_pressed("start") and $TurnTaker.text==name):
 		actions=0
 		get_node('../'+CardCount.player_info.find_key(1)).end_turn.rpc_id(1)
-	if Input.is_action_just_pressed('activate') and $TurnTaker.text==name:
+	if event.is_action_pressed('activate') and $TurnTaker.text==name:
 		var query=CardCount.raycast_from_mouse($Camera3D)
 		if query:
 			var collider=query['collider']
@@ -221,10 +217,13 @@ func _process(delta):
 				$AcceptDialog.visible=true
 			elif collider._card_type=='action' and collider._in_hand==self and collider._owned==multiplayer.get_unique_id() and not collider.check_inplay() and collider.has_method('check_inplay'):
 				get_node('../'+CardCount.player_info.find_key(1)).activate_card.rpc_id(1,collider.get_path())
-	if Input.is_action_just_pressed("start") and not $TurnTaker.text:
+	if event.is_action_pressed("start") and not $TurnTaker.text:
 		deal()
-	if Input.is_action_just_pressed("players"):
+	if event.is_action_pressed("players"):
 		$PlayerNames.print_names(players)
-		$PlayerNames.visible=!$PlayerNames.visible
+		$PlayerNames.visible=!$PlayerNames.visible	
+func _process(_delta):
+	pass
+	
 		
 		

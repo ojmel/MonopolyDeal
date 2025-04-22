@@ -38,10 +38,8 @@ func raycast_from_mouse(camera,collision_mask=0b1):
 		ray.collide_with_areas=true
 		var mouse_pos=get_viewport().get_mouse_position()
 		ray.hit_from_inside=true
-		var origin=camera.project_ray_origin(mouse_pos)
-		var normal=camera.project_ray_normal(mouse_pos)
-		ray.from=origin
-		ray.to=normal*1000
+		ray.from=camera.project_ray_origin(mouse_pos)
+		ray.to=camera.project_ray_normal(mouse_pos)*1000
 		return get_world_3d().direct_space_state.intersect_ray(ray)
 		
 @rpc("any_peer","call_local","reliable")

@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends RigidBody3D
 class_name Card
 
 var animate_time=0.3
@@ -11,7 +11,7 @@ var bord=preload('res://card_border.tres')
 var _clicked=null
 var _play_area=null
 var target=Vector3.ZERO
-enum _states {hand,play,active,discard}
+enum _states {hand,play,discard}
 var _state=_states.hand
 var tween=null
 var _owned=null
@@ -80,7 +80,7 @@ func move_to_discard(place):
 	tween.parallel().tween_property(self,'global_position:z',place.z,animate_time)
 	tween.parallel().tween_property(self,'global_rotation',Vector3(0,PI/2,0),animate_time)
 	tween.parallel().tween_method(give_parabola,0.0,1.0,animate_time)
-	_state=_states.active
+	_state=_states.discard
 	_update()	
 	
 @rpc("any_peer","call_local","unreliable_ordered")	
@@ -95,6 +95,8 @@ func move_non_authority_card(suggested_velocity):
 func rotate_non_authority_card(suggested_rotation):
 	# Only for y rotations
 	if not multiplayer.is_server(): return
+	global_rotation.x=0
+	global_rotation.z=0
 	rotate_y(suggested_rotation)
 	
 func _physics_process(delta):

@@ -48,8 +48,14 @@ text = "Enter Address"
 alignment = 1
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, 0, 3.04396, 0)
-light_energy = 8.788
+transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, -1.2212, 3.80527, 0.0979419)
+light_energy = 16.0
+light_indirect_energy = 3.424
+
+[node name="SpotLight3D2" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, 1.79683, 3.77971, 0)
+light_energy = 16.0
+light_indirect_energy = 3.424
 
 [node name="CardSpawn" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("res://scenes/CARD.tscn")

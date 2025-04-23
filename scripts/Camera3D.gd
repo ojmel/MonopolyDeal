@@ -35,5 +35,5 @@ func _input(event):
 			rotate_object_local(Vector3(0,1,0),lerp(rotation_speed,-rotation_speed,inverse_lerp(-50.0,50.0,event.relative.x)))
 			rotation.z=clamp(rotation.z,0,0)
 
-func _process(delta):
+func _process(_delta):
 	pass

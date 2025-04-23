@@ -24,7 +24,7 @@ func _on_host_button_pressed():
 func _on_join_button_pressed():
 	main_menu.hide()
 	table.show()
-	enet_peer.create_client('2601:5c2:0:c2a0:beba:f0c9:44d4:5890', PORT)
+	enet_peer.create_client('localhost', PORT)
 	multiplayer.multiplayer_peer = enet_peer
 	multiplayer.connected_to_server.connect(func(): request_spawn.rpc_id(1,[$Menu/Name.text,multiplayer.get_unique_id()]))
 		

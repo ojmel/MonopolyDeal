@@ -112,4 +112,5 @@ grow_vertical = 2
 label_settings = SubResource("LabelSettings_kkjfw")
 script = ExtResource("5_41pfr")
 
+[connection signal="body_entered" from="." to="." method="entered"]
 [connection signal="body_exited" from="." to="." method="card_exited"]

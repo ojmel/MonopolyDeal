@@ -6,8 +6,8 @@ func _ready() -> void:
 	
 func print_names(names:Array):
 	text=''
-	for name in names:
-		text+=name+'\n'
+	for _name in names:
+		text+=_name+'\n'
 	
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	pass

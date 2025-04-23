@@ -1,11 +1,14 @@
-[gd_scene load_steps=5 format=3 uid="uid://bpal7wplyqm1w"]
+[gd_scene load_steps=6 format=3 uid="uid://bpal7wplyqm1w"]
 
 [ext_resource type="Script" path="res://cards/carv3.gd" id="1_33g14"]
 [ext_resource type="PackedScene" uid="uid://bgqbbei6jg1r1" path="res://card_mesh.tscn" id="2_hb012"]
 
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_brbtr"]
+friction = 0.4
+bounce = 0.15
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_831ii"]
-margin = 0.025
-size = Vector3(2.165, 2.585, 2.01)
+size = Vector3(0.61, 0.02, 0.402402)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_e4ppw"]
 properties/0/path = NodePath(".:position")
@@ -18,12 +21,16 @@ properties/1/replication_mode = 1
 [node name="CARD" type="RigidBody3D"]
 transform = Transform3D(1.91069e-15, 4.37114e-08, 1, 1, -4.37114e-08, 0, 4.37114e-08, 1, -4.37114e-08, 0, 0, 0)
 disable_mode = 1
+collision_mask = 0
+physics_material_override = SubResource("PhysicsMaterial_brbtr")
+gravity_scale = 0.0
+continuous_cd = true
 script = ExtResource("1_33g14")
 
 [node name="Cube" parent="." instance=ExtResource("2_hb012")]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(0.3, 0, 0, 0, 0.002, 0, 0, 0, 0.2, 0.025, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65436e-24, 0, 0.00100586)
 shape = SubResource("BoxShape3D_831ii")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]

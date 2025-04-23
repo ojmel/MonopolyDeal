@@ -46,7 +46,6 @@ func change_turn(current_turn_taker:String):
 				get_node('../'+turn_taker).request_dealer.rpc_id(turn_taker_id,turn_taker_id)
 		
 func _ready():
-	print_debug(get_viewport().size)
 	CardCount.update_cards()
 	spawner=get_node('../CardSpawn')
 	spawner.spawn_function=add_to_hand

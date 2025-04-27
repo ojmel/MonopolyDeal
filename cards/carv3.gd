@@ -1,7 +1,7 @@
 extends RigidBody3D
 class_name Card
 
-
+var falling=false
 var rotation_needed
 var animate_time=0.3
 var _in_hand=null
@@ -74,8 +74,6 @@ func move_to_discard(place):
 	if not multiplayer.is_server(): return
 	place.y=place.y-0.03
 	default_pos=place
-	set_process(false)
-	set_physics_process(false)
 	if not is_inside_tree():
 		await ready
 	tween = create_tween()
@@ -83,15 +81,16 @@ func move_to_discard(place):
 	tween.parallel().tween_property(self,'global_position:z',place.z,animate_time)
 	tween.parallel().tween_property(self,'global_rotation',Vector3(0,PI/2,0),animate_time)
 	tween.parallel().tween_method(give_parabola,0.0,1.0,animate_time)
-	_state=_states.discard
-	_update()	
+	tween.tween_callback(func(): _state=_states.discard).set_delay(animate_time)
+	tween.tween_callback(func(): _update()).set_delay(animate_time+0.1)
+	set_process(false)
+	set_physics_process(false)
 	
 @rpc("any_peer","call_local","unreliable_ordered")	
 func move_non_authority_card(suggested_velocity:Vector3):
 	if not multiplayer.is_server(): return
-	linear_velocity=suggested_velocity.limit_length(30)
+	linear_velocity=suggested_velocity.limit_length(40)
 	
-# because they can be rotated any old way, im gonna have to have torque around y and find a way to make it face up
 @rpc("any_peer","call_local","unreliable_ordered")	
 func rotate_non_authority_card(suggested_rotation):
 	# Only for y rotations
@@ -99,26 +98,27 @@ func rotate_non_authority_card(suggested_rotation):
 	rotation_needed=true
 	
 func _physics_process(delta: float) -> void:
-	if _clicked:
+	# i could lower velocity when mouse moves off table
+	if _clicked==multiplayer.get_unique_id():
 		var suggested_velocity
-		if _clicked==multiplayer.get_unique_id():
-			if _in_hand:
-				var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d())
-				if query:
-					target=query['position']
-				else:
-					var mouse_pos=get_viewport().get_mouse_position()
-					var origin=camera.project_ray_origin(mouse_pos)
-					target=origin+camera.project_ray_normal(mouse_pos)*2
-				suggested_velocity=(target-global_position).project(transform.basis.x)*card_speed*delta
-				move_non_authority_card.rpc_id(1,suggested_velocity)
-			elif _state==_states.play:
-				check_inplay()
-				var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d(),0b10)
-				if query:
-					target=query['position']
-				suggested_velocity=(target-global_position)*card_speed*delta
-				move_non_authority_card.rpc_id(1,suggested_velocity)
+		if _in_hand:
+			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d())
+			if query:
+				target=query['position']
+			else:
+				var mouse_pos=get_viewport().get_mouse_position()
+				var origin=camera.project_ray_origin(mouse_pos)
+				target=origin+camera.project_ray_normal(mouse_pos)*2
+			suggested_velocity=(target-global_position).project(transform.basis.x)*card_speed*delta
+			#if not suggested_velocity.y>0: return
+			move_non_authority_card.rpc_id(1,suggested_velocity)
+		elif _state==_states.play:
+			check_inplay()
+			var query=CardCount.raycast_from_mouse(get_viewport().get_camera_3d(),0b10)
+			if query:
+				target=query['position']
+			suggested_velocity=(target-global_position)*card_speed*delta
+			move_non_authority_card.rpc_id(1,suggested_velocity)
 		
 func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	if not multiplayer.is_server(): return
@@ -130,12 +130,15 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 		if check_inplay() and _clicked:
 			temp_form.origin.y=_play_area.global_position.y+.3
 		if rotation_needed:
-			#rotation
 			angular_velocity=Vector3.ZERO
 			temp_form.basis=Basis().looking_at(Vector3.UP,Vector3.UP,true)*Basis(Vector3.UP, deg_to_rad(90))
 			rotation_needed=false
+		if falling:
+			temp_form.origin.y=5
+			temp_form.origin.z=0
+			temp_form.origin.x=0
+			falling=false
 		state.transform=temp_form
-		#t.basis =  * t.basis
 		
 func set_hand(hand):
 	if not multiplayer.is_server(): return
@@ -168,6 +171,7 @@ func _mouse_exit():
 @rpc("any_peer", "call_local","reliable")
 func click(clicker_id):
 	_clicked=clicker_id
+	if not multiplayer.is_server(): return
 	gravity_scale=0
 	
 @rpc("any_peer", "call_local","reliable")
@@ -195,7 +199,6 @@ func update_card(mesh,state,in_hand,card_type,clicked,owned):
 @rpc("any_peer", "call_local","reliable")
 func _update():
 	if not multiplayer.is_server(): return
-	
 	if _in_hand!=null: _in_hand=_in_hand.get_path()
 	update_card.rpc(_mesh,_state,_in_hand,_card_type,_clicked,_owned)
 	

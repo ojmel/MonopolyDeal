@@ -67,7 +67,26 @@ Enter: End Turn
 R: Rotate Card
 Space: Card Zoom
 Q: Default Camera
-?: Toggle Controls Menu"
+C: Camera Controls"
+label_settings = SubResource("LabelSettings_rhr6b")
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("4_6ltrr")
+
+[node name="CameraInstruct" type="Label" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 91
+theme_override_styles/normal = SubResource("StyleBoxEmpty_661f8")
+text = "W,D : Up, Down
+A,S: Left, Right
+Scroll Up: Zoom In 
+Scroll Down: Zoom Out
+Hold Right Mouse to Pan"
 label_settings = SubResource("LabelSettings_rhr6b")
 horizontal_alignment = 1
 vertical_alignment = 1

@@ -175,11 +175,14 @@ func map_card_hands():
 	
 func _input(event):
 	if not is_multiplayer_authority(): return
+	var collider
+	var query
 	if event is InputEventMouseButton:
 		if event.button_index==1 and event.is_pressed() and not clicking:
-			var query=CardCount.raycast_from_mouse($Camera3D)
+			query=CardCount.raycast_from_mouse($Camera3D)
 			if query:
-				if query['collider'].has_method('make_card') and not query['collider']._clicked:
+				collider=query['collider']
+				if collider.has_method('make_card') and not collider._clicked and collider._state!=Card._states.discard:
 					clicking=query['collider']
 					clicking.click.rpc(multiplayer.get_unique_id())
 					clicking.add_to_group(clicked_group)
@@ -192,13 +195,15 @@ func _input(event):
 		get_node('../'+clicking.name).rotate_non_authority_card.rpc_id(1,PI/2)
 	if event.is_action_pressed("controls?"):
 		$Instructions.visible=!$Instructions.visible
+	if event.is_action_pressed("camera_controls"):
+		$CameraInstruct.visible=!$CameraInstruct.visible
 	if event.is_action_pressed("camera"):
 		$Camera3D.global_transform=camera_default
 	if event.is_action_pressed("card_zoom"):
-		var query=CardCount.raycast_from_mouse($Camera3D)
+		query=CardCount.raycast_from_mouse($Camera3D)
 		# make this more intuitive so it goes away when you are looking at the same card
 		if query:
-			var collider=query['collider']
+			collider=query['collider']
 			if collider._mesh and (collider._in_hand==self or collider.check_inplay()):
 				$Camera3D/Cube.visible=true
 				$Camera3D/Cube.mesh=load(collider._mesh)
@@ -207,10 +212,11 @@ func _input(event):
 	if actions>=3 or (event.is_action_pressed("start") and $TurnTaker.text==name):
 		actions=0
 		get_node('../'+CardCount.player_info.find_key(1)).end_turn.rpc_id(1)
+		
 	if event.is_action_pressed('activate') and $TurnTaker.text==name:
-		var query=CardCount.raycast_from_mouse($Camera3D)
+		query=CardCount.raycast_from_mouse($Camera3D)
 		if query:
-			var collider=query['collider']
+			collider=query['collider']
 			if collider._mesh=="res://cards/action//passgo.tres" and cards.size()>8: 
 				$AcceptDialog.dialog_text='You have too many cards to pass go.'
 				$AcceptDialog.visible=true

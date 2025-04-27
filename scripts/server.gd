@@ -3,7 +3,10 @@ extends Node
 @onready var main_menu = $Menu
 @onready var table =$table 
 @onready var spawner=$MultiplayerSpawner
-var player_positions=[Transform3D(Basis(Vector3.LEFT,PI/4),Vector3(1.8,0,2.1)),Transform3D(Basis(Vector3.LEFT,PI/4),Vector3(-1.8,0,2.1)),Transform3D(Basis(Vector3.UP,PI/2)*Basis(Vector3.LEFT,PI/4),Vector3(3.6,0,0)),Transform3D(Basis(Vector3.UP,PI)*Basis(Vector3.LEFT,PI/4),Vector3(-1.8,0,-2.1)),Transform3D(Basis(Vector3.UP,PI)*Basis(Vector3.LEFT,PI/4),Vector3(1.8,0,-2.1))]
+var player_positions=[Transform3D(Basis(Vector3.UP,PI)*Basis(Vector3.LEFT,PI/4),Vector3(1.8,.5,-2.7)),Transform3D(Basis(Vector3.LEFT,PI/4),Vector3(-1.8,.5,2.7)),Transform3D(Basis(Vector3.UP,PI/2)*Basis(Vector3.LEFT,PI/4),
+Vector3(4.4,.5,0)),Transform3D(Basis(Vector3.LEFT,PI/4),Vector3(1.8,.5,2.7)),
+Transform3D(Basis(Vector3.UP,PI)*Basis(Vector3.LEFT,PI/4),
+Vector3(-1.8,.5,-2.7))]
 var active_players={}
 
 @onready var player=preload("res://scenes/hand.tscn")
@@ -74,3 +77,7 @@ func upnp_setup():
 		"UPNP Port Mapping Failed! Error %s" % map_result)
 	
 	print("Success! Join Address: %s" % upnp.query_external_address())
+
+
+func _on_floor_body_entered(body: Node3D) -> void:
+	pass # Replace with function body.

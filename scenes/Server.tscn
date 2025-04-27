@@ -1,12 +1,70 @@
-[gd_scene load_steps=3 format=3 uid="uid://bumhc6femfv3o"]
+[gd_scene load_steps=5 format=3 uid="uid://bumhc6femfv3o"]
 
 [ext_resource type="Script" path="res://scripts/server.gd" id="1_amb8d"]
 [ext_resource type="PackedScene" uid="uid://bktpbvi6uxju1" path="res://scenes/Table.tscn" id="2_xvkum"]
+[ext_resource type="Script" path="res://scenes/Floor.gd" id="3_8fjlc"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_73ajm"]
+size = Vector3(15.98, 0.285, 14.69)
 
 [node name="Node" type="Node"]
 script = ExtResource("1_amb8d")
 
 [node name="table" parent="." instance=ExtResource("2_xvkum")]
+
+[node name="CARD" parent="table" index="3"]
+transform = Transform3D(4.37114e-08, -6.60023e-15, 1, -1.50996e-07, -1, 2.5411e-21, 1, -1.50996e-07, -4.37114e-08, 0.248377, 0.261729, 0)
+
+[node name="Cube" parent="table/CARD" index="0"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0)
+
+[node name="CollisionShape3D" parent="table/CARD" index="1"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, -1.05879e-22, 0, 4.1359e-25, 0.146, 0, 0, 0.00100586)
+
+[node name="CARD2" parent="table" index="4"]
+transform = Transform3D(4.37114e-08, -6.60023e-15, 1, -1.50996e-07, -1, 2.5411e-21, 1, -1.50996e-07, -4.37114e-08, 0.248377, 0.265729, 0)
+
+[node name="Cube" parent="table/CARD2" index="0"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0)
+
+[node name="CollisionShape3D" parent="table/CARD2" index="1"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0.00100586)
+
+[node name="CARD3" parent="table" index="5"]
+transform = Transform3D(4.37114e-08, -6.60023e-15, 1, -1.50996e-07, -1, 2.5411e-21, 1, -1.50996e-07, -4.37114e-08, 0.248377, 0.269729, 0)
+
+[node name="Cube" parent="table/CARD3" index="0"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0)
+
+[node name="CollisionShape3D" parent="table/CARD3" index="1"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0.00100586)
+
+[node name="CARD4" parent="table" index="6"]
+transform = Transform3D(4.37114e-08, -6.60023e-15, 1, -1.50996e-07, -1, 2.5411e-21, 1, -1.50996e-07, -4.37114e-08, 0.248377, 0.273729, 0)
+
+[node name="Cube" parent="table/CARD4" index="0"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0)
+
+[node name="CollisionShape3D" parent="table/CARD4" index="1"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0.00100586)
+
+[node name="CARD5" parent="table" index="7"]
+transform = Transform3D(4.37114e-08, -6.60023e-15, 1, -1.50996e-07, -1, 2.5411e-21, 1, -1.50996e-07, -4.37114e-08, 0.248377, 0.277729, 0)
+
+[node name="Cube" parent="table/CARD5" index="0"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0)
+
+[node name="CollisionShape3D" parent="table/CARD5" index="1"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0.00100586)
+
+[node name="CARD6" parent="table" index="8"]
+transform = Transform3D(4.37114e-08, -6.60023e-15, 1, -1.50996e-07, -1, 2.5411e-21, 1, -1.50996e-07, -4.37114e-08, 0.248377, 0.281729, 0)
+
+[node name="Cube" parent="table/CARD6" index="0"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0)
+
+[node name="CollisionShape3D" parent="table/CARD6" index="1"]
+transform = Transform3D(0.22, 0, 0, 0, 0.001, 0, 0, 0, 0.146, 0, 0, 0.00100586)
 
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("res://scenes/hand.tscn")
@@ -49,12 +107,12 @@ alignment = 1
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, -1.2212, 3.80527, 0.0979419)
-light_energy = 16.0
+light_energy = 7.515
 light_indirect_energy = 3.424
 
 [node name="SpotLight3D2" type="SpotLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.00872653, 0.999962, 0, -0.999962, -0.00872653, 1.79683, 3.77971, 0)
-light_energy = 16.0
+light_energy = 8.68
 light_indirect_energy = 3.424
 
 [node name="CardSpawn" type="MultiplayerSpawner" parent="."]
@@ -62,8 +120,18 @@ _spawnable_scenes = PackedStringArray("res://scenes/CARD.tscn")
 spawn_path = NodePath("..")
 spawn_limit = 108
 
+[node name="Floor" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.68575, 0)
+collision_layer = 0
+script = ExtResource("3_8fjlc")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.30369, 0)
+shape = SubResource("BoxShape3D_73ajm")
+
 [connection signal="pressed" from="Menu/Host" to="." method="_on_host_button_pressed"]
 [connection signal="pressed" from="Menu/Join" to="." method="_on_join_button_pressed"]
+[connection signal="body_entered" from="Floor" to="Floor" method="_on_body_entered"]
 
 [editable path="table"]
 [editable path="table/CARD"]

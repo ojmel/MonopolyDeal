@@ -70,14 +70,16 @@ func deal():
 			add_card_to_hand(CardCount.player_info[player])
 	players.shuffle()
 	turn_taker=players.front()
-	multiplayer.get_peers()
 	for player in players:
 		get_node('../'+player).change_turn.rpc_id(CardCount.player_info[player],turn_taker)
 		
 func shuffle_discard():
 	if not multiplayer.is_server(): return
 	deck_info=get_discard_info()
+	for node in discard_nodes:
+		node.queue_free()
 	discard_nodes.clear()
+	
 	
 @rpc("any_peer")
 func request_dealer(peer_id:int):
@@ -123,14 +125,14 @@ func add_to_hand(data):
 func activate_card(card_path):
 	if not multiplayer.is_server(): return
 	var card=get_node(card_path)
-	#card.get_node('CollisionShape3D').disabled=true
 	var discard=get_node('/root/Node/table/Discard')
 	card.move_to_discard(discard.global_position+Vector3(0,0.005*discard_nodes.size(),0))
 	if card._mesh=="res://cards/action//passgo.tres":
+		var recipient=turn_taker
 		await card.tween.finished
 		for x in range(2):
 			# Will glitch things out if youplay more than 1 pass go at your limit
-			add_card_to_hand(CardCount.player_info[turn_taker])
+			add_card_to_hand(CardCount.player_info[recipient])
 	discard_nodes.append(card)
 	CardCount.internal_update(deck_info,get_discard_info())
 	
@@ -139,7 +141,7 @@ func get_discard_info():
 	
 func card_exited(body):
 	if not is_multiplayer_authority(): return
-	if body._in_hand==self and $TurnTaker.text==CardCount.player_info.find_key(multiplayer.get_unique_id()):
+	if body._in_hand==self and $TurnTaker.text==CardCount.player_info.find_key(multiplayer.get_unique_id()) or body._mesh=="res://cards/action//sayno.tres":
 		actions+=1
 		body.play_card.rpc_id(1)
 		body.change_card_visibility.rpc()
@@ -190,7 +192,9 @@ func _input(event):
 			clicking=false
 			for card in get_tree().get_nodes_in_group(clicked_group):
 				card.unclick.rpc()
-				
+	if actions>=3 or (event.is_action_pressed("start") and $TurnTaker.text==name):
+		actions=0
+		get_node('../'+CardCount.player_info.find_key(1)).end_turn.rpc_id(1)
 	if event.is_action_pressed('rotate') and clicking and not clicking._in_hand:
 		get_node('../'+clicking.name).rotate_non_authority_card.rpc_id(1,PI/2)
 	if event.is_action_pressed("controls?"):
@@ -209,24 +213,25 @@ func _input(event):
 				$Camera3D/Cube.mesh=load(collider._mesh)
 		else:
 			$Camera3D/Cube.visible=false
-	if actions>=3 or (event.is_action_pressed("start") and $TurnTaker.text==name):
-		actions=0
-		get_node('../'+CardCount.player_info.find_key(1)).end_turn.rpc_id(1)
+	
 		
-	if event.is_action_pressed('activate') and $TurnTaker.text==name:
+	if event.is_action_pressed('activate'):
 		query=CardCount.raycast_from_mouse($Camera3D)
 		if query:
 			collider=query['collider']
+			if not collider._card_type=='action' or collider._in_hand!=self or collider._owned!=multiplayer.get_unique_id() or collider.check_inplay() or not collider.has_method('check_inplay'):
+				return
 			if collider._mesh=="res://cards/action//passgo.tres" and cards.size()>8: 
 				$AcceptDialog.dialog_text='You have too many cards to pass go.'
 				$AcceptDialog.visible=true
-			elif collider._card_type=='action' and collider._in_hand==self and collider._owned==multiplayer.get_unique_id() and not collider.check_inplay() and collider.has_method('check_inplay'):
+			elif collider._mesh=="res://cards/action//sayno.tres":
+				actions=-1
+				get_node('../'+CardCount.player_info.find_key(1)).activate_card.rpc_id(1,collider.get_path())
+			elif $TurnTaker.text==name:
 				get_node('../'+CardCount.player_info.find_key(1)).activate_card.rpc_id(1,collider.get_path())
 	if event.is_action_pressed("start") and not $TurnTaker.text:
 		deal()
-	if event.is_action_pressed("players"):
-		$PlayerNames.print_names(players)
-		$PlayerNames.visible=!$PlayerNames.visible	
+	
 func _process(_delta):
 	pass
 	

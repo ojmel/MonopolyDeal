@@ -1,11 +1,15 @@
-[gd_scene load_steps=5 format=3 uid="uid://bumhc6femfv3o"]
+[gd_scene load_steps=7 format=3 uid="uid://bumhc6femfv3o"]
 
 [ext_resource type="Script" path="res://scripts/server.gd" id="1_amb8d"]
 [ext_resource type="PackedScene" uid="uid://bktpbvi6uxju1" path="res://scenes/Table.tscn" id="2_xvkum"]
 [ext_resource type="Script" path="res://scenes/Floor.gd" id="3_8fjlc"]
+[ext_resource type="Script" path="res://scenes/PlayerNames.gd" id="4_078nl"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_73ajm"]
 size = Vector3(15.98, 0.285, 14.69)
+
+[sub_resource type="LabelSettings" id="LabelSettings_yo2bb"]
+font_size = 56
 
 [node name="Node" type="Node"]
 script = ExtResource("1_amb8d")
@@ -102,7 +106,7 @@ alignment = 1
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 46
-text = "Enter Address"
+placeholder_text = "Enter Address"
 alignment = 1
 
 [node name="SpotLight3D" type="SpotLight3D" parent="."]
@@ -118,7 +122,7 @@ light_indirect_energy = 3.424
 [node name="CardSpawn" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("res://scenes/CARD.tscn")
 spawn_path = NodePath("..")
-spawn_limit = 108
+spawn_limit = 500
 
 [node name="Floor" type="Area3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.68575, 0)
@@ -128,6 +132,18 @@ script = ExtResource("3_8fjlc")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Floor"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.30369, 0)
 shape = SubResource("BoxShape3D_73ajm")
+
+[node name="PlayerNames" type="Label" parent="."]
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_right = 40.0
+offset_bottom = 11.5
+grow_vertical = 2
+label_settings = SubResource("LabelSettings_yo2bb")
+vertical_alignment = 1
+script = ExtResource("4_078nl")
 
 [connection signal="pressed" from="Menu/Host" to="." method="_on_host_button_pressed"]
 [connection signal="pressed" from="Menu/Join" to="." method="_on_join_button_pressed"]

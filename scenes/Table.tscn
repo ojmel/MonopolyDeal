@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://bktpbvi6uxju1"]
+[gd_scene load_steps=10 format=3 uid="uid://bktpbvi6uxju1"]
 
 [ext_resource type="PackedScene" uid="uid://rsgrdjgucc8q" path="res://scenes/table.glb" id="1_xn0kr"]
 [ext_resource type="Script" path="res://scripts/table.gd" id="2_s4hxf"]
@@ -8,11 +8,8 @@
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3qirt"]
 albedo_color = Color(0.0383972, 0.0383972, 0.0383972, 1)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6aywd"]
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_ywx7p"]
-material = SubResource("StandardMaterial3D_6aywd")
-size = Vector2(5.97, 3.21)
+[sub_resource type="PlaneMesh" id="PlaneMesh_qiuoj"]
+size = Vector2(6.855, 3.555)
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_uxvhh"]
 friction = 0.55
@@ -33,10 +30,10 @@ mesh = ExtResource("3_wtsb8")
 surface_material_override/2 = SubResource("StandardMaterial3D_3qirt")
 
 [node name="PlayArea" type="MeshInstance3D" parent="." index="1"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.251279, 0)
+transform = Transform3D(1.405, 0, 0, 0, 1.405, 0, 0, 0, 1.405, 0, 0.321, 0)
+top_level = true
 visible = false
-mesh = SubResource("PlaneMesh_ywx7p")
-skeleton = NodePath("../Cube")
+mesh = SubResource("PlaneMesh_qiuoj")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="." index="2"]
 collision_layer = 2

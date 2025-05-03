@@ -14,6 +14,7 @@ var _clicked=null
 var _play_area=null
 var target=Vector3.ZERO
 enum _states {hand,play,discard}
+var rotations=[0,PI/2,PI,3*PI/2,2*PI]
 var _state=_states.hand
 var tween=null
 var _owned=null
@@ -23,16 +24,16 @@ var bounds
 	
 @rpc("any_peer", "call_local","reliable")
 func change_card_visibility():
-	if _state==_states.play or multiplayer.get_unique_id()==_owned:
+	if _state==_states.play or multiplayer.get_unique_id()==_owned or _state==_states.discard:
 		$Cube.mesh=load(_mesh)
 	else:
-		$Cube.mesh=load("res://cards/money/1M.tres")
+		$Cube.mesh=load("res://blank.tres")
 		
 @rpc("any_peer", "call_local","reliable")	
 func make_card(mesh_path,type):
 	_card_type=type
 	_mesh=mesh_path
-	$Cube.mesh=load("res://cards/money/1M.tres")
+	$Cube.mesh=load("res://blank.tres")
 	bord=bord.duplicate()
 	bord.emission_enabled=false
 	$Cube.set_surface_override_material(0,bord)
@@ -89,7 +90,7 @@ func move_to_discard(place):
 @rpc("any_peer","call_local","unreliable_ordered")	
 func move_non_authority_card(suggested_velocity:Vector3):
 	if not multiplayer.is_server(): return
-	linear_velocity=suggested_velocity.limit_length(40)
+	linear_velocity=suggested_velocity.limit_length(60)
 	
 @rpc("any_peer","call_local","unreliable_ordered")	
 func rotate_non_authority_card(suggested_rotation):
@@ -99,6 +100,7 @@ func rotate_non_authority_card(suggested_rotation):
 	
 func _physics_process(delta: float) -> void:
 	# i could lower velocity when mouse moves off table
+	# or have walls reflect
 	if _clicked==multiplayer.get_unique_id():
 		var suggested_velocity
 		if _in_hand:
@@ -110,7 +112,7 @@ func _physics_process(delta: float) -> void:
 				var origin=camera.project_ray_origin(mouse_pos)
 				target=origin+camera.project_ray_normal(mouse_pos)*2
 			suggested_velocity=(target-global_position).project(transform.basis.x)*card_speed*delta
-			#if not suggested_velocity.y>0: return
+			if not suggested_velocity.y>0: return
 			move_non_authority_card.rpc_id(1,suggested_velocity)
 		elif _state==_states.play:
 			check_inplay()
@@ -131,12 +133,12 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 			temp_form.origin.y=_play_area.global_position.y+.3
 		if rotation_needed:
 			angular_velocity=Vector3.ZERO
-			temp_form.basis=Basis().looking_at(Vector3.UP,Vector3.UP,true)*Basis(Vector3.UP, deg_to_rad(90))
+			var current_rotation=rotations.pop_front()
+			rotations.push_back(current_rotation)
+			temp_form.basis=Basis().looking_at(Vector3.LEFT, Vector3.UP)*Basis(Vector3.UP, current_rotation)
 			rotation_needed=false
 		if falling:
 			temp_form.origin.y=5
-			temp_form.origin.z=0
-			temp_form.origin.x=0
 			falling=false
 		state.transform=temp_form
 		

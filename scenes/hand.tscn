@@ -1,13 +1,11 @@
-[gd_scene load_steps=13 format=3 uid="uid://bxu82eblmj5ve"]
+[gd_scene load_steps=11 format=3 uid="uid://bxu82eblmj5ve"]
 
 [ext_resource type="Script" path="res://scripts/hand.gd" id="1_ojssk"]
 [ext_resource type="PackedScene" uid="uid://dn3nh2i6thjen" path="res://scenes/camera_3d.tscn" id="2_hl1yg"]
 [ext_resource type="PackedScene" uid="uid://bgqbbei6jg1r1" path="res://card_mesh.tscn" id="3_lo6fd"]
-[ext_resource type="Script" path="res://scenes/dynamic_label.gd" id="4_6ltrr"]
-[ext_resource type="Script" path="res://scenes/PlayerNames.gd" id="5_41pfr"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_xmhc3"]
-size = Vector3(2.886, 0.573, 0.164)
+size = Vector3(2.886, 0.573, 0.249)
 
 [sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_18w1l"]
 properties/0/path = NodePath(".:position")
@@ -71,7 +69,6 @@ C: Camera Controls"
 label_settings = SubResource("LabelSettings_rhr6b")
 horizontal_alignment = 1
 vertical_alignment = 1
-script = ExtResource("4_6ltrr")
 
 [node name="CameraInstruct" type="Label" parent="."]
 visible = false
@@ -82,15 +79,14 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_font_sizes/font_size = 91
 theme_override_styles/normal = SubResource("StyleBoxEmpty_661f8")
-text = "W,D : Up, Down
-A,S: Left, Right
+text = "W,S : Up, Down
+A,D: Left, Right
 Scroll Up: Zoom In 
 Scroll Down: Zoom Out
 Hold Right Mouse to Pan"
 label_settings = SubResource("LabelSettings_rhr6b")
 horizontal_alignment = 1
 vertical_alignment = 1
-script = ExtResource("4_6ltrr")
 
 [node name="AcceptDialog" type="AcceptDialog" parent="."]
 initial_position = 1
@@ -104,7 +100,6 @@ offset_bottom = 111.0
 grow_horizontal = 0
 label_settings = SubResource("LabelSettings_oauqg")
 horizontal_alignment = 1
-script = ExtResource("4_6ltrr")
 
 [node name="InstructQueue" type="Label" parent="."]
 offset_right = 40.0
@@ -113,7 +108,6 @@ text = "Press ? for Controls"
 label_settings = SubResource("LabelSettings_mx3u2")
 horizontal_alignment = 1
 vertical_alignment = 1
-script = ExtResource("4_6ltrr")
 
 [node name="PlayerNames" type="Label" parent="."]
 visible = false
@@ -129,7 +123,6 @@ offset_bottom = 52.5
 grow_horizontal = 2
 grow_vertical = 2
 label_settings = SubResource("LabelSettings_kkjfw")
-script = ExtResource("5_41pfr")
 
 [connection signal="body_entered" from="." to="." method="entered"]
 [connection signal="body_exited" from="." to="." method="card_exited"]

@@ -3,7 +3,7 @@ class_name Hand
 var cards=[]
 var card_spacing=0.125
 var z_spacing=0.01
-var card_scene=preload("res://scenes/CARD.tscn")
+var card_scene=preload("res://scenes/card.tscn")
 @onready var camera = $Camera3D
 var camera_default
 var table=null

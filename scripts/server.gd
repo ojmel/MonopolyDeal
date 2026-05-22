@@ -12,6 +12,7 @@ var active_players={}
 @onready var player=preload("res://scenes/hand.tscn")
 const PORT = 5005
 var enet_peer = ENetMultiplayerPeer.new()
+
 func _input(event: InputEvent) -> void:
 	if not is_multiplayer_authority(): return
 	if event.is_action_pressed("players"):
@@ -25,7 +26,6 @@ func _on_host_button_pressed():
 	table.show()
 	upnp_setup()
 	enet_peer.create_server(PORT,5)
-	enet_peer.set_bind_ip('73.251.37.65')
 	multiplayer.multiplayer_peer = enet_peer
 	spawner.spawn([$Menu/Name.text,multiplayer.get_unique_id()])
 	
@@ -33,7 +33,7 @@ func _on_host_button_pressed():
 func _on_join_button_pressed():
 	main_menu.hide()
 	table.show()
-	enet_peer.create_client($Menu/Address.text, PORT)
+	print(enet_peer.create_client($Menu/Address.text, PORT))
 	multiplayer.multiplayer_peer = enet_peer
 	multiplayer.connected_to_server.connect(func(): request_spawn.rpc_id(1,[$Menu/Name.text,multiplayer.get_unique_id()]))
 		
@@ -85,5 +85,3 @@ func upnp_setup():
 	print("Success! Join Address: %s" % upnp.query_external_address())
 	return upnp.query_external_address()
 
-func _on_floor_body_entered(body: Node3D) -> void:
-	pass # Replace with function body.

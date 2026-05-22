@@ -189,14 +189,14 @@ func unclick():
 		
 @rpc("any_peer", "call_local","reliable")
 func update_card(mesh,state,in_hand,card_type,clicked,owned):
+	print(mesh)
 	_mesh=mesh
 	_state=state
 	_card_type=card_type
 	_clicked=clicked
 	_owned=owned
-	if in_hand==null: _in_hand=null
-	else: _in_hand=get_node(in_hand)
-	change_card_visibility()
+	_in_hand=null if in_hand==null else get_node(in_hand)
+	change_card_visibility.rpc()
 	
 @rpc("any_peer", "call_local","reliable")
 func _update():

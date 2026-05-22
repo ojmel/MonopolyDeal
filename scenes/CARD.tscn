@@ -1,8 +1,8 @@
 [gd_scene load_steps=7 format=3 uid="uid://bpal7wplyqm1w"]
 
-[ext_resource type="Script" path="res://cards/carv3.gd" id="1_33g14"]
-[ext_resource type="PackedScene" uid="uid://bgqbbei6jg1r1" path="res://card_mesh.tscn" id="2_hb012"]
-[ext_resource type="ArrayMesh" uid="uid://dmgrk7p6up3w6" path="res://1M.tres" id="3_4vo35"]
+[ext_resource type="Script" path="res://cards/carv3.gd" id="1_208xl"]
+[ext_resource type="PackedScene" uid="uid://bgqbbei6jg1r1" path="res://card_mesh.tscn" id="2_bmarr"]
+[ext_resource type="ArrayMesh" uid="uid://dmgrk7p6up3w6" path="res://1M.tres" id="3_se5mc"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_brbtr"]
 friction = 0.4
@@ -26,10 +26,10 @@ collision_mask = 0
 physics_material_override = SubResource("PhysicsMaterial_brbtr")
 gravity_scale = 0.0
 continuous_cd = true
-script = ExtResource("1_33g14")
+script = ExtResource("1_208xl")
 
-[node name="Cube" parent="." instance=ExtResource("2_hb012")]
-mesh = ExtResource("3_4vo35")
+[node name="Cube" parent="." instance=ExtResource("2_bmarr")]
+mesh = ExtResource("3_se5mc")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.65436e-24, 0, 0.00100586)

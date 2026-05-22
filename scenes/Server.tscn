@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/server.gd" id="1_amb8d"]
 [ext_resource type="PackedScene" uid="uid://bktpbvi6uxju1" path="res://scenes/Table.tscn" id="2_xvkum"]
-[ext_resource type="Script" path="res://scenes/Floor.gd" id="3_8fjlc"]
-[ext_resource type="Script" path="res://scenes/PlayerNames.gd" id="4_078nl"]
+[ext_resource type="Script" path="res://scripts/Floor.gd" id="3_8fjlc"]
+[ext_resource type="Script" path="res://scripts/PlayerNames.gd" id="4_078nl"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_73ajm"]
 size = Vector3(15.98, 0.285, 14.69)
@@ -134,6 +134,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.30369, 0)
 shape = SubResource("BoxShape3D_73ajm")
 
 [node name="PlayerNames" type="Label" parent="."]
+visible = false
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5

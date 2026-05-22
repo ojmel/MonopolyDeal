@@ -18,7 +18,7 @@ properties/1/replication_mode = 1
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_661f8"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_rhr6b"]
-font_size = 66
+font_size = 80
 
 [sub_resource type="LabelSettings" id="LabelSettings_oauqg"]
 font_size = 100
